@@ -1,0 +1,11 @@
+# 本地环境变量（含密钥，勿提交）
+env.local.ps1
+
+# 构建产物
+certcos
+certcos.exe
+
+# Go
+*.exe
+*.test
+vendor/
