@@ -25,21 +25,6 @@
 
 - `LEGO_CA_DIR`：ACME 目录 URL，默认 Let's Encrypt 生产环境；测试可用 `https://acme-staging-v02.api.letsencrypt.org/directory`
 
-### 用 PowerShell 设置环境变量
-
-1. 生成加密密钥并复制模板：
-   ```powershell
-   .\certcos.exe gen-key   # 输出一行 Base64，复制到 env.local.ps1 的 LEGO_COS_ENCRYPTION_KEY
-   Copy-Item env.example.ps1 env.local.ps1
-   # 编辑 env.local.ps1，填入上述密钥及 COS、Cloudflare 等
-   ```
-2. 在当前会话加载环境变量后运行工具：
-   ```powershell
-   . .\Set-Env.ps1
-   .\certcos.exe cert -domain qianqiu.ren,*.qianqiu.ren -email admin@example.com
-   ```
-   `env.local.ps1` 已加入 `.gitignore`，不会提交到仓库。
-
 ## 使用
 
 所有操作均通过子命令执行；无参数或 `certcos help` 可查看命令列表。
@@ -49,16 +34,16 @@
 certcos cert -domain example.com -email admin@example.com
 
 # 多个域名共一张证书（逗号分隔，含通配符）
-certcos cert -domain qianqiu.ren,*.qianqiu.ren -email admin@example.com
+certcos cert -domain example.com,*.example.com -email admin@example.com
 
 # 生成加密密钥（填入 LEGO_COS_ENCRYPTION_KEY）
 certcos gen-key
 
 # 将 COS 证书同步到腾讯云证书平台
-certcos sync-cert -domain qianqiu.ren
+certcos sync-cert -domain example.com
 ```
 
-确保已设置上述环境变量。`cert` 首次运行会创建 ACME 账户并申请证书；之后运行会按证书有效期自动续期（默认在到期前 30 天内续期）。证书按第一个域名的路径存于 COS（如 `certs/qianqiu_ren/`）。`sync-cert` 的 `-domain` 为存储路径对应的主域名（即申请时第一个域名），平台侧以该域名作为证书备注（Alias）匹配。
+确保已设置上述环境变量。`cert` 首次运行会创建 ACME 账户并申请证书；之后运行会按证书有效期自动续期（默认在到期前 30 天内续期）。证书按第一个域名的路径存于 COS（如 `certs/example_com/`）。`sync-cert` 的 `-domain` 为存储路径对应的主域名（即申请时第一个域名），平台侧以该域名作为证书备注（Alias）匹配。
 
 ## COS 路径约定
 
