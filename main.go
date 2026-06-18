@@ -165,12 +165,14 @@ func runSyncCert() {
 		fmt.Fprintln(os.Stderr, "需要设置 COS_BUCKET, COS_REGION, COS_APPID, COS_SECRET_ID, COS_SECRET_KEY")
 		os.Exit(1)
 	}
+	resourceTypesRegions := parseResourceTypesRegions(os.Getenv("SYNC_CERT_RESOURCE_TYPES"))
+
 	store, err := cos.NewStore(cos.Config{Bucket: cosBucket, Region: cosRegion, AppID: cosAppID, SecretID: cosSecretID, SecretKey: cosSecretKey})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "COS: %v\n", err)
 		os.Exit(1)
 	}
-	if err := cmd.RunSyncCert(*domain, store, encKey, cosSecretID, cosSecretKey); err != nil {
+	if err := cmd.RunSyncCert(*domain, store, encKey, cosSecretID, cosSecretKey, resourceTypesRegions); err != nil {
 		fmt.Fprintf(os.Stderr, "错误: %v\n", err)
 		os.Exit(1)
 	}
@@ -178,10 +180,33 @@ func runSyncCert() {
 
 func parseDomains(s string) []string {
 	var out []string
-	for _, p := range strings.Split(s, ",") {
+	for p := range strings.SplitSeq(s, ",") {
 		if d := strings.TrimSpace(p); d != "" {
 			out = append(out, d)
 		}
 	}
 	return out
+}
+
+func parseResourceTypesRegions(s string) map[string][]string {
+	if s == "" {
+		return nil
+	}
+	m := make(map[string][]string)
+	for _, group := range strings.Split(s, ";") {
+		rt, regions, _ := strings.Cut(group, ":")
+		rt = strings.TrimSpace(rt)
+		if rt == "" {
+			continue
+		}
+		for _, r := range strings.Split(regions, ",") {
+			if r = strings.TrimSpace(r); r != "" {
+				m[rt] = append(m[rt], r)
+			}
+		}
+	}
+	if len(m) == 0 {
+		return nil
+	}
+	return m
 }
